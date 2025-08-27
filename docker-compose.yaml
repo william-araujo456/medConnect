@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:14
+    environment:
+      - POSTGRES_DB=aulademo
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=fpf2025
+    ports:
+      - "5434:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data: {}
