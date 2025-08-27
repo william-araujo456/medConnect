@@ -22,6 +22,12 @@ class AddressViewSet(viewsets.ModelViewSet):
     filterset_class = filters.AddressFilter
     permission_classes = [IsAuthenticated]
 
+class HealthInsuranceViewSet(viewsets.ModelViewSet):
+    queryset = models.HealthInsurance.objects.all()
+    serializer_class = serializers.HealthInsuranceSerializer
+    filterset_class = filters.HealthInsuranceFilter
+    permission_classes = [IsAuthenticated]
+
 class BloodTypeViewSet(viewsets.ModelViewSet):
     queryset = models.BloodType.objects.all()
     serializer_class = serializers.BloodTypeSerializer
