@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from hospital import models, serializers, filters
 
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = models.User.objects.all()
     serializer_class = serializers.UserSerializer
@@ -29,13 +30,6 @@ class HealthInsuranceViewSet(viewsets.ModelViewSet):
     queryset = models.HealthInsurance.objects.all()
     serializer_class = serializers.HealthInsuranceSerializer
     filterset_class = filters.HealthInsuranceFilter
-    permission_classes = [IsAuthenticated]
-
-
-class BloodTypeViewSet(viewsets.ModelViewSet):
-    queryset = models.BloodType.objects.all()
-    serializer_class = serializers.BloodTypeSerializer
-    filterset_class = filters.BloodTypeFilter
     permission_classes = [IsAuthenticated]
 
 
