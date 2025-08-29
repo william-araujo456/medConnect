@@ -15,18 +15,17 @@ LTE = 'lte' # menor ou igual a
 IN = 'in' # Usando in para trazer palavras que estão na lista
 
 class UserFilter(filters.FilterSet):
-    id = filters.NumberFilter(field_name='id', lookup_expr='exact')
-    name = (filters.CharFilter(field_name='name', lookup_expr='icontains'))
-    email = (filters.CharFilter(field_name='email', lookup_expr='icontains'))
-    cpf = (filters.CharFilter(field_name='cpf', lookup_expr='icontains'))
-    sex = (filters.ChoiceFilter(choices=models.User.sex_choices))
+    id = filters.NumberFilter(field_name='id', lookup_expr=EQUALS)
+    name = (filters.CharFilter(field_name='name', lookup_expr=LIKE))
+    email = (filters.CharFilter(field_name='email', lookup_expr=LIKE))
+    cpf = (filters.CharFilter(field_name='cpf', lookup_expr=LIKE))
 
     class Meta:
         model = models.User
         fields = ['id','name','email','cpf','sex']
 
 class TelephoneFilter(filters.FilterSet):
-    number = (filters.CharFilter(field_name='number', lookup_expr='icontains'))
+    number = (filters.CharFilter(field_name='number', lookup_expr=LIKE))
     user_id = (filters.NumberFilter(field_name='user_id'))
 
     class Meta:
@@ -34,8 +33,8 @@ class TelephoneFilter(filters.FilterSet):
         fields = ['number','user']
 
 class AddressFilter(filters.FilterSet):
-    postal_code = filters.CharFilter(lookup_expr='icontains')
-    number_house = filters.CharFilter(lookup_expr='icontains')
+    postal_code = filters.CharFilter(lookup_expr=LIKE)
+    number_house = filters.CharFilter(lookup_expr=LIKE)
     user_id = filters.NumberFilter(field_name='user__id')
 
     class Meta:
@@ -43,25 +42,18 @@ class AddressFilter(filters.FilterSet):
         fields = ['postal_code', 'number_house', 'user']
 
 class HealthInsuranceFilter(filters.FilterSet):
-    name = filters.CharFilter(lookup_expr='icontains')
+    name = filters.CharFilter(lookup_expr=LIKE)
 
     class Meta:
         model = models.HealthInsurance
         fields = ['name']
 
-class BloodTypeFilter(filters.FilterSet):
-    name = filters.ChoiceFilter(choices=models.BloodType.type_choices)
-
-    class Meta:
-        model = models.BloodType
-        fields = ['name']
 
 class PatientFilter(filters.FilterSet):
-    weight_min = filters.NumberFilter(field_name='weight', lookup_expr='gte')
-    weight_max = filters.NumberFilter(field_name='weight', lookup_expr='lte')
-    height_min = filters.NumberFilter(field_name='height', lookup_expr='gte')
-    height_max = filters.NumberFilter(field_name='height', lookup_expr='lte')
-    blood_type = filters.ModelChoiceFilter(queryset=models.BloodType.objects.all())
+    weight_min = filters.NumberFilter(field_name='weight', lookup_expr=GTE)
+    weight_max = filters.NumberFilter(field_name='weight', lookup_expr=LTE)
+    height_min = filters.NumberFilter(field_name='height', lookup_expr=GTE)
+    height_max = filters.NumberFilter(field_name='height', lookup_expr=LTE)
     user_id = filters.NumberFilter(field_name='user__id')
 
     class Meta:
@@ -69,9 +61,8 @@ class PatientFilter(filters.FilterSet):
         fields = ['weight', 'height', 'blood_type', 'user']
 
 class PatientHealthInsuranceFilter(filters.FilterSet):
-    type = filters.ChoiceFilter(choices=models.PatientHealthInsurance.type_choice)
-    waiting_period_after = filters.DateFilter(field_name='waiting_period', lookup_expr='gte')
-    waiting_period_before = filters.DateFilter(field_name='waiting_period', lookup_expr='lte')
+    waiting_period_after = filters.DateFilter(field_name='waiting_period', lookup_expr=GTE)
+    waiting_period_before = filters.DateFilter(field_name='waiting_period', lookup_expr=LTE)
     health_insurance = filters.ModelChoiceFilter(queryset=models.HealthInsurance.objects.all())
     patient = filters.ModelChoiceFilter(queryset=models.Patient.objects.all())
 
@@ -80,7 +71,7 @@ class PatientHealthInsuranceFilter(filters.FilterSet):
         fields = ['type', 'health_insurance', 'patient']
 
 class MedicFilter(filters.FilterSet):
-    crm = filters.CharFilter(lookup_expr='icontains')
+    crm = filters.CharFilter(lookup_expr=LIKE)
     user_id = filters.NumberFilter(field_name='user__id')
     specialization = filters.ModelMultipleChoiceFilter(
         queryset=models.Specialization.objects.all(),
@@ -93,15 +84,15 @@ class MedicFilter(filters.FilterSet):
         fields = ['crm', 'user', 'specialization']
 
 class SpecializationFilter(filters.FilterSet):
-    name = filters.CharFilter(lookup_expr='icontains')
+    name = filters.CharFilter(lookup_expr=LIKE)
 
     class Meta:
         model = models.Specialization
         fields = ['name']
 
 class ConsultationFilter(filters.FilterSet):
-    date_after = filters.DateTimeFilter(field_name='time_consultation', lookup_expr='gte')
-    date_before = filters.DateTimeFilter(field_name='time_consultation', lookup_expr='lte')
+    date_after = filters.DateTimeFilter(field_name='time_consultation', lookup_expr=GTE)
+    date_before = filters.DateTimeFilter(field_name='time_consultation', lookup_expr=LTE)
     medic_attended = filters.BooleanFilter()
     patient_attended = filters.BooleanFilter()
     medic = filters.ModelChoiceFilter(queryset=models.Medic.objects.all())
@@ -112,17 +103,15 @@ class ConsultationFilter(filters.FilterSet):
         fields = ['time_consultation', 'diagnosis', 'medic_attended','patient_attended', 'medic', 'patient']
 
 class MedicationFilter(filters.FilterSet):
-    name = filters.CharFilter(lookup_expr='icontains')
-    type_application = filters.ChoiceFilter(choices=models.Medication.application_choice)
-    type_dosage = filters.ChoiceFilter(choices=models.Medication.dosage_choice)
+    name = filters.CharFilter(lookup_expr=LIKE)
 
     class Meta:
         model = models.Medication
         fields = ['name', 'type_application', 'type_dosage']
 
 class MedicationConsultationFilter(filters.FilterSet):
-    dosage_min = filters.NumberFilter(field_name='dosage', lookup_expr='gte')
-    dosage_max = filters.NumberFilter(field_name='dosage', lookup_expr='lte')
+    dosage_min = filters.NumberFilter(field_name='dosage', lookup_expr=GTE)
+    dosage_max = filters.NumberFilter(field_name='dosage', lookup_expr=LTE)
     consultation = filters.ModelChoiceFilter(queryset=models.Consultation.objects.all())
     medication = filters.ModelChoiceFilter(queryset=models.Medication.objects.all())
 

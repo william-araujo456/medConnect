@@ -1,6 +1,7 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
+
 class ModelBase(models.Model):
     id = models.BigAutoField(
         db_column='id',
@@ -28,11 +29,13 @@ class ModelBase(models.Model):
         abstract = True
         managed = True
 
+
 class User(models.Model):
-    sex_choices = {
-        ('male', 'male'),
-        ('female', 'female')
-    }
+    class Sex(models.TextChoices):
+        NOT_DEFINED = 'ND', 'Não definido'
+        MALE = 'M', 'Masculino'
+        FEMALE = 'F', 'Femenino'
+
     name = models.CharField(
         db_column='tx_name',
         max_length=255,
@@ -51,11 +54,12 @@ class User(models.Model):
         unique=True
     )
     sex = models.CharField(
-        db_column='tx_sex',
+        db_column='cs_sex',
         max_length=10,
         null=False,
         blank=False,
-        choices=sex_choices
+        choices=Sex.choices,
+        default=0
     )
     cpf = models.CharField(
         db_column='tx_cpf',
@@ -72,6 +76,7 @@ class User(models.Model):
         db_table = 'user'
         verbose_name = 'User'
         verbose_name_plural = 'Users'
+
 
 class Telephone(ModelBase):
     number = models.CharField(
@@ -94,6 +99,7 @@ class Telephone(ModelBase):
         db_table = 'telephone'
         verbose_name = 'Telephone'
         verbose_name_plural = 'Telephones'
+
 
 class Address(ModelBase):
     postal_code = models.CharField(
@@ -123,6 +129,7 @@ class Address(ModelBase):
         verbose_name = 'Address'
         verbose_name_plural = 'Addresses'
 
+
 class HealthInsurance(ModelBase):
     name = models.CharField(
         db_column='tx_name',
@@ -139,35 +146,18 @@ class HealthInsurance(ModelBase):
         verbose_name = 'Health Insurance'
         verbose_name_plural = 'Health Insurances'
 
-class BloodType(ModelBase):
-    type_choices = {
-        ('A+','A+'),
-        ('A-','A-'),
-        ('B+','B+'),
-        ('B-','B-'),
-        ('AB+','AB+'),
-        ('AB-','AB-'),
-        ('O+','O+'),
-        ('O-','O-'),
-    }
-    name = models.CharField(
-        db_column='tx_name',
-        max_length=255,
-        null=False,
-        blank=False,
-        choices=type_choices,
-        default='O+',
-    )
-
-    def __str__(self):
-        return f'{self.id} - {self.name}'
-
-    class Meta:
-        db_table = 'blood_type'
-        verbose_name = 'Blood Type'
-        verbose_name_plural = 'Blood Types'
 
 class Patient(ModelBase):
+    class BloodType(models.TextChoices):
+        AP = 'A+', 'A+'
+        AN = 'A-', 'A-'
+        BP = 'B+', 'B+'
+        BN = 'B-', 'B-'
+        ABP = 'AB+', 'AB+'
+        ABN = 'AB-', 'AB-'
+        OP = 'O+', 'O+'
+        ON = 'O-', 'O-'
+
     user = models.ForeignKey(
         User,
         db_column='id_user',
@@ -187,12 +177,13 @@ class Patient(ModelBase):
         blank=False,
         validators=[MinValueValidator(0), MaxValueValidator(300)],
     )
-    blood_type = models.ForeignKey(
-        BloodType,
-        db_column='id_blood_type',
+    blood_type = models.CharField(
+        db_column='cs_blood_type',
+        max_length=5,
         null=False,
-        on_delete=models.PROTECT,
-        blank=False
+        blank=False,
+        choices=BloodType.choices,
+        default=BloodType.ABP
     )
 
     def __str__(self):
@@ -203,13 +194,14 @@ class Patient(ModelBase):
         verbose_name = 'Patient'
         verbose_name_plural = 'Patients'
 
+
 class PatientHealthInsurance(ModelBase):
-    type_choice = {
-        ('nursery','nursery'),
-        ('apartment','apartment')
-    }
+    class Type(models.IntegerChoices):
+        NURSERY = 1, 'Enfermaria'
+        APARTMENT = 2, 'Apartamento'
+
     insurance_number = models.CharField(
-        db_column='insurance_number',
+        db_column='tx_insurance_number',
         max_length=120,
         null=False,
         blank=False
@@ -217,11 +209,12 @@ class PatientHealthInsurance(ModelBase):
 
     ##choice
     type = models.CharField(
-        db_column='type',
+        db_column='cs_type',
         max_length=255,
         null=False,
         blank=False,
-        choices=type_choice
+        choices=Type.choices,
+        default=Type.NURSERY
     )
     waiting_period = models.DateField(
         db_column='dt_waiting_period',
@@ -249,6 +242,7 @@ class PatientHealthInsurance(ModelBase):
         db_table = 'patient_health_insurance'
         verbose_name = 'Patient Health Insurance'
         verbose_name_plural = 'Patients Health Insurances'
+
 
 class Medic(ModelBase):
     crm = models.CharField(
@@ -278,8 +272,8 @@ class Medic(ModelBase):
         verbose_name = 'Medic'
         verbose_name_plural = 'Medics'
 
-class Specialization(ModelBase):
 
+class Specialization(ModelBase):
     name = models.CharField(
         db_column='tx_name',
         max_length=210,
@@ -295,10 +289,10 @@ class Specialization(ModelBase):
         verbose_name = 'Specialization'
         verbose_name_plural = 'Specializations'
 
-class Consultation(ModelBase):
 
+class Consultation(ModelBase):
     time_consultation = models.DateTimeField(
-        db_column='datetime',
+        db_column='dt_time_consultation',
         null=False,
         blank=False
     )
@@ -344,33 +338,33 @@ class Consultation(ModelBase):
         verbose_name = 'Consultation'
         verbose_name_plural = 'Consultations'
 
+
 class Medication(ModelBase):
-    application_choice = {
-        ('1-','oral'),
-        ('2-','injectable')
-    }
-    dosage_choice = {
-        ('1-','1ml'),
-        ('2-','2mg')
-    }
+    class Application(models.IntegerChoices):
+        ORAL = 1, 'Oral'
+        INJECTABLE = 2, 'Injetável'
+
+    class DosageType(models.IntegerChoices):
+        ML = 1, 'ml'
+        MG = 2, 'mg'
+
     name = models.CharField(
         db_column='tx_name',
         max_length=255,
         null=False,
     )
     # choices
-    type_application = models.CharField(
-        db_column='type_application',
-        max_length=40,
+    type_application = models.IntegerField(
+        db_column='cs_type_application',
         null=False,
-        choices=application_choice
+        choices=Application.choices
     )
     # choices
     type_dosage = models.CharField(
-        db_column='type_dosage',
+        db_column='cs_type_dosage',
         max_length=40,
         null=False,
-        choices=dosage_choice
+        choices=DosageType.choices,
     )
 
     def __str__(self):
@@ -380,6 +374,7 @@ class Medication(ModelBase):
         db_table = 'medication'
         verbose_name = 'Medication'
         verbose_name_plural = 'Medications'
+
 
 class MedicationConsultation(ModelBase):
     medication = models.ForeignKey(
@@ -393,7 +388,7 @@ class MedicationConsultation(ModelBase):
         on_delete=models.CASCADE
     )
     dosage = models.IntegerField(
-        db_column='dosage',
+        db_column='nb_dosage',
         null=False
     )
 
